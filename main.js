@@ -175,8 +175,93 @@ $(document).ready(function () {
 	$(".start").fadeOut();
 	$(".game-over").fadeIn();
   }
-  
+  function gameWin(){
+	if(!gameRunning) return;
+	gameRunning = false;
+	clearInterval(intervalId);
+	const now = Date.now();
 
+	const elapsed = now -startTime;
+	if(eşapsed < highestScore || highestScore ===0){
+		highestScore = elapsed;
+		const minutes = Math.floor(highestScore / (1000* 60));
+		const seconds = Math.floor ((highestScore % (1000* 60 )) / 1000)
+		const milliseconds = Math.floor((highestScore % 1000) / 10);
+		$("#highestScore, .highestScore").text(
+			`${pad(minutes, 2)}:${pad(seconds, 2)}`
+		)
+	}
+	$(".win").fadeIn();
+	$(".bestTime").fadeIn();
+  }
 
+  $(".restartButton").click(function(){
+	resetGame();
+	$(".game-over,").fadeOut();
+  })
 
-})
+  function resetGame(){
+	gameRunning = true;
+	timerStarted = false;
+	clearInterval(invervalId);
+	$("#chronometer,. choronometer").text("00:00");
+
+	hero.css("top", "calc(50% + 200px)");
+	hero.removeClass("invert");
+
+	$(".obstacle, .bush, .floor, object, #finishLine").each(function(){
+		$(this).data("initialLeft", $(this).css("left"))
+	})
+  }
+  $(".bush").each(function (index){
+	var $bush = $(this);
+
+	function toggleObstacle(){
+		$bush.toggleObstacle("obstacle monster");
+		setTimeout(
+			toggleObstacle,
+			$bush.hasClass("obstacle monster")
+						? getToogleTime(index, true)
+						: getToogleTime(index, false)
+		)
+	}
+	toggleObstacle()
+  })
+
+  function getToogleTime(index,isObstacle){
+	var toggleTimes=[
+		[3000,4000],
+		[4000,5000],
+		[5000,6500],
+		[3500,4000],
+		[6000,7000]
+	];
+	return isObstacle ? toggleTimes[index][0] : toggleTimes[index][1];
+  }
+
+  function checkHeroSilhouetteOverlap(){
+	const heroPos = hero[0].getBoundingClientRect();
+	let heroInFrontOfEyes = false;
+
+	$(".silhouette").each(function(){
+		const bushPos = this.getBoundingClientRect();
+
+		if(
+			!(
+				heroPos.right< bushPos.left ||
+				heroPos.left > bushPos.right ||
+				heroPos.bottom < bushPos.top ||
+				heroPos.top > bushPos.bottom
+			)
+		){
+			heroInFrontOfEyes = true;
+		}
+	})
+
+	if (herInFrontOfEyes){
+		hero.addClass("invert");
+	}else{
+		hero.removeClass("invert")
+	}
+  }
+});
